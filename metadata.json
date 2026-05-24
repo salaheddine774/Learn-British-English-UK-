@@ -1,0 +1,6 @@
+{
+  "name": "Learn British English",
+  "description": "Learn authentic British English with an AI Tutor in Arabic, covering slang, accent, money, writing, and custom chat simulations.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
