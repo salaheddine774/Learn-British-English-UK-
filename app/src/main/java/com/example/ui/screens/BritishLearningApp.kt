@@ -1,8 +1,10 @@
 package com.example.ui.screens
 
 import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -25,6 +27,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
@@ -33,6 +36,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -48,8 +52,24 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.*
 import com.example.viewmodel.BritishLearningViewModel
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.ui.unit.Dp
 
-// Palette: Royal Navy Dark Theme
+// Palette: Playful Duolingo & British Colors
+val DuolingoGreen = Color(0xFFC8102E)
+val DuolingoDarkGreen = Color(0xFF9E0B22)
+val DuolingoBlue = Color(0xFF00247D)
+val DuolingoDarkBlue = Color(0xFF00154A)
+val DuolingoOrange = Color(0xFFFF9600)
+val DuolingoDarkOrange = Color(0xFFE68500)
+val DuolingoRed = Color(0xFFFF4B4B)
+val DuolingoDarkRed = Color(0xFFEA2B2B)
+val DuolingoPurple = Color(0xFFA435F0)
+val DuolingoDarkPurple = Color(0xFF872BCA)
+val DuolingoYellow = Color(0xFFFFD900)
+
 val NavyDeep = Color(0xFF0F172A)
 val CharcoalSlate = Color(0xFF1E293B)
 val GoldenAmber = Color(0xFFF59E0B)
@@ -58,6 +78,469 @@ val PlatinumClean = Color(0xFFF8FAFC)
 val AccentCrimson = Color(0xFFE11D48)
 val BritishBlue = Color(0xFF2563EB)
 
+// ================= CUSTOM 3D DUOLINGO BUTTON =================
+@Composable
+fun DuolingoButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    backgroundColor: Color = Color(0xFFE52026),
+    shadowColor: Color = Color(0xFFB51218),
+    enabled: Boolean = true,
+    height: Dp = 48.dp,
+    elevationHeight: Dp = 4.dp,
+    cornerRadius: Dp = 16.dp,
+    content: @Composable RowScope.() -> Unit
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val pushOffset by animateDpAsState(
+        targetValue = if (isPressed) elevationHeight else 0.dp,
+        animationSpec = spring(dampingRatio = 0.8f, stiffness = 400f),
+        label = "button_press_y"
+    )
+
+    Box(
+        modifier = modifier
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                enabled = enabled,
+                onClick = onClick
+            )
+            .height(height + elevationHeight)
+    ) {
+        // Bottom shadow layer
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter)
+                .height(height)
+                .background(
+                    if (enabled) shadowColor else Color(0xFFCCCCCC),
+                    shape = RoundedCornerShape(cornerRadius)
+                )
+        )
+        // Top layer (which moves down when pressed)
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .fillMaxWidth()
+                .height(height)
+                .offset(y = pushOffset)
+                .background(
+                    if (enabled) backgroundColor else Color(0xFFE5E5E5),
+                    shape = RoundedCornerShape(cornerRadius)
+                )
+                .border(2.dp, if (enabled) backgroundColor else Color(0xFFE5E5E5), RoundedCornerShape(cornerRadius)),
+            contentAlignment = Alignment.Center
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                content()
+            }
+        }
+    }
+}
+
+// ================= WINSTON THE LION: CUTE VECTOR BRITISH MASCOT WITH ROYAL GOLDEN CROWN =================
+@Composable
+fun BritishOwlMascot(modifier: Modifier = Modifier, speechBubbleText: String? = null) {
+    val isDark = isSystemInDarkTheme()
+    val bubbleBg = if (isDark) Color(0xFF1E293B) else Color.White
+    val bubbleBorder = if (isDark) Color(0xFF334155) else Color(0xFFE5E5E5)
+    val textCol = if (isDark) Color.White else Color(0xFF3C3C3C)
+
+    Row(
+        modifier = modifier.fillMaxWidth().padding(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
+    ) {
+        // Draw the Redesigned British Lion Mascot (Cute Royal Winston the Lion)
+        Box(
+            modifier = Modifier
+                .size(80.dp)
+                .padding(4.dp)
+        ) {
+            // 1. Lion Mane (Big fluffy amber-orange circle / gear shape)
+            Box(
+                modifier = Modifier
+                    .size(60.dp)
+                    .align(Alignment.Center)
+                    .background(Color(0xFFD97706), CircleShape) // Golden brown mane
+            ) {
+                // Mane fluffiness: small circles around the main circle to give it a thick gorgeous look
+                val fluffPositions = listOf(
+                    Alignment.TopCenter, Alignment.BottomCenter,
+                    Alignment.CenterStart, Alignment.CenterEnd,
+                    Alignment.TopStart, Alignment.TopEnd,
+                    Alignment.BottomStart, Alignment.BottomEnd
+                )
+                fluffPositions.forEach { alignment ->
+                    Box(
+                        modifier = Modifier
+                            .size(18.dp)
+                            .align(alignment)
+                            .background(Color(0xFFD97706), CircleShape)
+                    )
+                }
+            }
+
+            // 2. Lion Ears (sticking out on top of head, coming from under mane fluff)
+            // Left Ear
+            Box(
+                modifier = Modifier
+                    .size(14.dp)
+                    .offset(x = 12.dp, y = 6.dp)
+                    .background(Color(0xFFD97706), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(8.dp)
+                        .background(Color(0xFFFFD900), CircleShape)
+                )
+            }
+            // Right Ear
+            Box(
+                modifier = Modifier
+                    .size(14.dp)
+                    .align(Alignment.TopEnd)
+                    .offset(x = (-12).dp, y = 6.dp)
+                    .background(Color(0xFFD97706), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(8.dp)
+                        .background(Color(0xFFFFD900), CircleShape)
+                )
+            }
+
+            // 3. Lion Face Box (Bright friendly round face)
+            Box(
+                modifier = Modifier
+                    .size(46.dp)
+                    .align(Alignment.Center)
+                    .background(Color(0xFFFFD900), CircleShape) // Skin color
+            ) {
+                // Two big cute friendly cartoon eyes
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .offset(y = 10.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    // Left Eye
+                    Box(
+                        modifier = Modifier
+                            .size(12.dp)
+                            .background(Color.White, CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(6.dp)
+                                .background(Color(0xFF111827), CircleShape)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(2.5.dp)
+                                    .align(Alignment.TopStart)
+                                    .offset(x = 1.dp, y = 1.dp)
+                                    .background(Color.White, CircleShape)
+                            )
+                        }
+                    }
+                    // Right Eye
+                    Box(
+                        modifier = Modifier
+                            .size(12.dp)
+                            .background(Color.White, CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(6.dp)
+                                .background(Color(0xFF111827), CircleShape)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(2.5.dp)
+                                    .align(Alignment.TopStart)
+                                    .offset(x = 1.dp, y = 1.dp)
+                                    .background(Color.White, CircleShape)
+                            )
+                        }
+                    }
+                }
+
+                // Friendly snout & nose
+                Box(
+                    modifier = Modifier
+                        .size(18.dp, 10.dp)
+                        .align(Alignment.BottomCenter)
+                        .offset(y = (-8).dp)
+                        .background(Color(0xFFFEF3C7), RoundedCornerShape(5.dp)),
+                    contentAlignment = Alignment.TopCenter
+                ) {
+                    // Triangle pink nose (British touch)
+                    Box(
+                        modifier = Modifier
+                            .size(6.dp, 4.dp)
+                            .background(Color(0xFFFF4B4B), RoundedCornerShape(bottomStart = 2.dp, bottomEnd = 2.dp))
+                    )
+                }
+
+                // Smiling mouth
+                Box(
+                    modifier = Modifier
+                        .size(6.dp, 3.dp)
+                        .align(Alignment.BottomCenter)
+                        .offset(y = (-5).dp)
+                        .background(Color(0xFFFF4B4B), RoundedCornerShape(bottomStart = 3.dp, bottomEnd = 3.dp))
+                )
+            }
+
+            // 4. ROYAL CROWN on head
+            Box(
+                modifier = Modifier
+                    .size(26.dp, 16.dp)
+                    .align(Alignment.TopCenter)
+                    .offset(y = (-4).dp)
+            ) {
+                // Crown gold baseline
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(3.dp)
+                        .align(Alignment.BottomCenter)
+                        .background(Color(0xFFF59E0B), RoundedCornerShape(1.dp))
+                )
+                // Crown spikes with red and blue jewels
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(13.dp)
+                        .align(Alignment.TopCenter),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.Bottom
+                ) {
+                    // Left spike
+                    Box(
+                        modifier = Modifier
+                            .size(5.dp, 9.dp)
+                            .background(Color(0xFFF59E0B), RoundedCornerShape(1.dp)),
+                        contentAlignment = Alignment.TopCenter
+                    ) {
+                        Box(modifier = Modifier.size(2.dp).background(Color(0xFFE11D48), CircleShape))
+                    }
+                    // Middle peak (taller royal element)
+                    Box(
+                        modifier = Modifier
+                            .size(8.dp, 13.dp)
+                            .background(Color(0xFFF59E0B), RoundedCornerShape(1.dp)),
+                        contentAlignment = Alignment.TopCenter
+                    ) {
+                        Box(modifier = Modifier.size(3.dp).background(Color(0xFF2563EB), CircleShape))
+                    }
+                    // Right spike
+                    Box(
+                        modifier = Modifier
+                            .size(5.dp, 9.dp)
+                            .background(Color(0xFFF59E0B), RoundedCornerShape(1.dp)),
+                        contentAlignment = Alignment.TopCenter
+                    ) {
+                        Box(modifier = Modifier.size(2.dp).background(Color(0xFFE11D48), CircleShape))
+                    }
+                }
+            }
+
+            // 5. Royal Red Guard Coat Collar/Cape beneath head
+            Box(
+                modifier = Modifier
+                    .size(30.dp, 10.dp)
+                    .align(Alignment.BottomCenter)
+                    .offset(y = 1.dp)
+                    .background(Color(0xFFC8102E), RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp))
+            ) {
+                // White accent collar line (Royal guard look)
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(2.dp)
+                        .align(Alignment.TopCenter)
+                        .background(Color.White)
+                )
+            }
+        }
+
+        // Speech Bubble if text provided
+        speechBubbleText?.let { text ->
+            Spacer(modifier = Modifier.width(6.dp))
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .shadow(1.dp, shape = RoundedCornerShape(12.dp))
+                    .background(bubbleBg, shape = RoundedCornerShape(12.dp))
+                    .border(2.dp, bubbleBorder, RoundedCornerShape(12.dp))
+                    .padding(10.dp)
+            ) {
+                Text(
+                    text = text,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = textCol,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        }
+    }
+}
+
+// ================= 100% GAMIFIED BRONZE LEAGUE COMPETITIVE SCREEN =================
+@Composable
+fun LeaderboardScreen(viewModel: BritishLearningViewModel) {
+    val progress by viewModel.userProgress.collectAsStateWithLifecycle()
+    val currentPoints = progress?.xpPoints ?: 0
+    val isDark = isSystemInDarkTheme()
+    
+    val bg = if (isDark) Color(0xFF131F24) else Color(0xFFF7F7F7)
+    val cardBg = if (isDark) Color(0xFF1E293B) else Color.White
+    val borderCol = if (isDark) Color(0xFF334155) else Color(0xFFE5E5E5)
+    val textCol = if (isDark) Color.White else Color(0xFF3C3C3C)
+    val secondaryText = if (isDark) Color(0xFF94A3B8) else Color(0xFF777777)
+
+    val list = remember(currentPoints) {
+        listOf(
+            "Omar K. 🇸🇦" to 950,
+            "Sarah M. 🚀" to 720,
+            "Liam B. 🇬🇧" to 580,
+            "أنت (المسار البريطاني) 👤" to currentPoints,
+            "Fatima A. 🇦🇪" to 340,
+            "Chloe P. 🎒" to 210,
+            "John S. ☕" to 120
+        ).sortedByDescending { it.second }
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(bg)
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .shadow(2.dp, shape = RoundedCornerShape(20.dp))
+                .background(Brush.verticalGradient(listOf(Color(0xFFFFD900), Color(0xFFF59E0B))), shape = RoundedCornerShape(20.dp))
+                .padding(20.dp)
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = "🏆 الدوري البرونزي / Bronze League",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Black,
+                    color = Color.White
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "ينتهي الدوري في: الأحد الساعة 8:00 مساءً 🗓️",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White.copy(alpha = 0.9f)
+                )
+            }
+        }
+
+        Card(
+            colors = CardDefaults.cardColors(containerColor = cardBg),
+            shape = RoundedCornerShape(16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(2.dp, borderCol, RoundedCornerShape(16.dp))
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = "جدول المتصدرين الأسبوعي / League Table",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = textCol,
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
+                
+                Divider(color = borderCol, modifier = Modifier.padding(bottom = 8.dp))
+
+                list.forEachIndexed { index, (userName, xp) ->
+                    val isUserItem = userName.contains("أنت")
+                    val itemBg = if (isUserItem) Color(0xFFDDF4FF).copy(alpha = 0.5f) else Color.Transparent
+                    val crownColor = when (index) {
+                        0 -> Color(0xFFFFD900)
+                        1 -> Color(0xFF94A3B8)
+                        2 -> Color(0xFFCD7F32)
+                        else -> Color.Transparent
+                    }
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(itemBg, RoundedCornerShape(8.dp))
+                            .padding(horizontal = 8.dp, vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .background(
+                                        if (crownColor != Color.Transparent) crownColor else Color.Transparent,
+                                        CircleShape
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "${index + 1}",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Black,
+                                    color = if (crownColor != Color.Transparent) Color.White else secondaryText
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                text = userName,
+                                fontSize = 14.sp,
+                                fontWeight = if (isUserItem) FontWeight.Bold else FontWeight.Medium,
+                                color = if (isUserItem) Color(0xFF1CB0F6) else textCol
+                            )
+                        }
+                        Text(
+                            text = "$xp XP",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = if (isUserItem) Color(0xFF1CB0F6) else textCol
+                        )
+                    }
+                    if (index < list.lastIndex) {
+                        Divider(color = borderCol.copy(alpha = 0.5f), thickness = 1.dp)
+                    }
+                }
+            }
+        }
+
+        BritishOwlMascot(
+            speechBubbleText = "رائع جداً! حافظ على رتبتك لتتأهل إلى الدوري الفضي (Silver League) الأسبوع القادم! 🚀"
+        )
+    }
+}
+
+// ================= MAIN APP COMPOSABLE CONTAINING IMMERSIVE NAVIGATIONS =================
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BritishLearningApp(
@@ -66,234 +549,321 @@ fun BritishLearningApp(
 ) {
     val activeTab by viewModel.activeTab.collectAsStateWithLifecycle()
     val userProgress by viewModel.userProgress.collectAsStateWithLifecycle()
+    val livesCount by viewModel.livesCount.collectAsStateWithLifecycle()
     val activeExplainWord by viewModel.activeExplainWord.collectAsStateWithLifecycle()
     val showAuthScreen by viewModel.showAuthScreen.collectAsStateWithLifecycle()
     val currentUserAccount by viewModel.currentUserAccount.collectAsStateWithLifecycle()
+
+    val isDark = isSystemInDarkTheme()
+    val themeBg = if (isDark) Color(0xFF131F24) else Color(0xFFF7F7F7)
+    val themeSurface = if (isDark) Color(0xFF1E293B) else Color.White
+    val themeBorder = if (isDark) Color(0xFF334155) else Color(0xFFE5E5E5)
+    val themeText = if (isDark) Color.White else Color(0xFF3C3C3C)
 
     if (showAuthScreen) {
         AuthLoadingOrScreen(viewModel, modifier)
     } else {
         Scaffold(
             modifier = modifier.testTag("british_learning_scaffold"),
-            containerColor = NavyDeep,
+            containerColor = themeBg,
             topBar = {
-                TopAppBar(
-                    title = {
+                // Highly polished, compact layout mimicking Duolingo's visual interface
+                Surface(
+                    color = themeSurface,
+                    tonalElevation = 2.dp,
+                    modifier = Modifier.border(width = 1.dp, color = themeBorder)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .statusBarsPadding()
+                            .padding(horizontal = 16.dp, vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        // Flag badge for current curriculum context
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            modifier = Modifier.fillMaxWidth().padding(end = 16.dp)
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(12.dp))
+                                .border(2.dp, themeBorder, RoundedCornerShape(12.dp))
+                                .padding(horizontal = 10.dp, vertical = 4.dp)
                         ) {
-                            Column {
-                                Text(
-                                    text = "Speak British AI",
-                                    fontSize = 19.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = PlatinumClean,
-                                    fontFamily = FontFamily.SansSerif
-                                )
-                                Text(
-                                    text = "مُعلمك البريطاني الخاص",
-                                    fontSize = 11.sp,
-                                    color = LightSlate
-                                )
-                            }
-                            // Stats Badges & Profile
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                // Profile / Sign-out Button
-                                var showProfileDialog by remember { mutableStateOf(false) }
-                                Box {
-                                    Row(
-                                        modifier = Modifier
-                                            .clip(RoundedCornerShape(12.dp))
-                                            .background(GoldenAmber.copy(alpha = 0.15f))
-                                            .border(1.dp, GoldenAmber.copy(alpha = 0.5f), RoundedCornerShape(12.dp))
-                                            .clickable { showProfileDialog = true }
-                                            .padding(horizontal = 8.dp, vertical = 5.dp),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Text("👤", fontSize = 11.sp)
-                                        Spacer(modifier = Modifier.width(3.dp))
-                                        Text(
-                                            text = currentUserAccount?.username ?: "Guest",
-                                            fontSize = 10.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = GoldenAmber,
-                                            maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis,
-                                            modifier = Modifier.widthIn(max = 60.dp)
-                                        )
-                                    }
+                            Text("🇬🇧", fontSize = 20.sp)
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                "British",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Black,
+                                color = themeText
+                            )
+                        }
 
-                                    if (showProfileDialog) {
-                                        Dialog(onDismissRequest = { showProfileDialog = false }) {
-                                            Card(
-                                                colors = CardDefaults.cardColors(containerColor = CharcoalSlate),
-                                                shape = RoundedCornerShape(16.dp),
-                                                modifier = Modifier.fillMaxWidth().padding(16.dp)
+                        // Streak/Combos indicator
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 4.dp)
+                        ) {
+                            Text("🔥", fontSize = 18.sp)
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "${userProgress?.streakDays ?: 0}",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Black,
+                                color = Color(0xFFFF9600)
+                            )
+                        }
+
+                        // Gems / Lingots indicator (Calculated dynamically)
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 4.dp)
+                        ) {
+                            Text("💎", fontSize = 18.sp)
+                            Spacer(modifier = Modifier.width(4.dp))
+                            val gems = 200 + (userProgress?.xpPoints ?: 0) * 5
+                            Text(
+                                text = "$gems",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Black,
+                                color = Color(0xFF1CB0F6)
+                            )
+                        }
+
+                        // Hearts indicator (Standard 5 lives with refill pop-up)
+                        var showRefillDialog by remember { mutableStateOf(false) }
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .padding(horizontal = 4.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .clickable { showRefillDialog = true }
+                                .padding(4.dp)
+                        ) {
+                            Text("❤️", fontSize = 18.sp)
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "$livesCount",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Black,
+                                color = Color(0xFFFF4B4B)
+                            )
+                        }
+
+                        if (showRefillDialog) {
+                            Dialog(onDismissRequest = { showRefillDialog = false }) {
+                                Card(
+                                    colors = CardDefaults.cardColors(containerColor = themeSurface),
+                                    shape = RoundedCornerShape(20.dp),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .border(2.dp, themeBorder, RoundedCornerShape(20.dp))
+                                        .padding(4.dp)
+                                ) {
+                                    Column(
+                                        modifier = Modifier.padding(18.dp),
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                                    ) {
+                                        Text("مخزن القلوب / Hearts Refill ❤️", fontSize = 16.sp, fontWeight = FontWeight.Black, color = Color(0xFFFF4B4B))
+                                        Text("القلوب تحميك من الأخطاء أثناء حل الكويزات ليبقى حماسك مشتعلاً! عدد قلوبك الحالية هو: $livesCount", fontSize = 12.sp, color = themeText, textAlign = TextAlign.Center)
+                                        
+                                        if (livesCount < 5) {
+                                            DuolingoButton(
+                                                onClick = {
+                                                    viewModel.refillLives()
+                                                    showRefillDialog = false
+                                                },
+                                                backgroundColor = Color(0xFFE52026),
+                                                shadowColor = Color(0xFFB51218),
+                                                modifier = Modifier.fillMaxWidth().height(42.dp)
                                             ) {
-                                                Column(
-                                                    modifier = Modifier.padding(16.dp),
-                                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                                                Text("ملء القلوب مجاناً! ❤️ (شاي إنجليزي)", fontSize = 12.sp, color = Color.White, fontWeight = FontWeight.Bold)
+                                            }
+                                        } else {
+                                            Text("قلوبك ممتلئة بالكامل حالياً! أنت جاهز للانطلاق 🚀", fontSize = 12.sp, color = Color(0xFF00247D), fontWeight = FontWeight.Bold)
+                                        }
+
+                                        DuolingoButton(
+                                            onClick = { showRefillDialog = false },
+                                            backgroundColor = Color(0xFF1CB0F6),
+                                            shadowColor = Color(0xFF1899D6),
+                                            modifier = Modifier.fillMaxWidth().height(40.dp)
+                                        ) {
+                                            Text("إغلاق القائمة", fontSize = 12.sp, color = Color.White, fontWeight = FontWeight.Bold)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // User profile triggers dialog
+                        var showProfileDialog by remember { mutableStateOf(false) }
+                        Box {
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(CircleShape)
+                                    .background(themeBorder)
+                                    .clickable { showProfileDialog = true },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text("👤", fontSize = 18.sp)
+                            }
+
+                            if (showProfileDialog) {
+                                Dialog(onDismissRequest = { showProfileDialog = false }) {
+                                    Card(
+                                        colors = CardDefaults.cardColors(containerColor = themeSurface),
+                                        shape = RoundedCornerShape(20.dp),
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .border(2.dp, themeBorder, RoundedCornerShape(20.dp))
+                                            .padding(8.dp)
+                                    ) {
+                                        Column(
+                                            modifier = Modifier.padding(18.dp),
+                                            horizontalAlignment = Alignment.CenterHorizontally,
+                                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                                        ) {
+                                            Text(
+                                                text = "الملف الشخصي / User Profile 🇬🇧",
+                                                fontSize = 16.sp,
+                                                fontWeight = FontWeight.Black,
+                                                color = Color(0xFFFF9600)
+                                            )
+                                            HorizontalDivider(color = themeBorder)
+                                            
+                                            if (currentUserAccount != null) {
+                                                Text("اسم المستخدم: ${currentUserAccount?.username}", fontSize = 13.sp, color = themeText, fontWeight = FontWeight.Bold)
+                                                Text("البريد الإلكتروني: ${currentUserAccount?.email}", fontSize = 12.sp, color = themeText.copy(alpha = 0.7f))
+                                                Text("مجموع النقاط: ${currentUserAccount?.xpPoints} XP", fontSize = 15.sp, color = Color(0xFFE52026), fontWeight = FontWeight.Black)
+                                                Text("الأيام المتتالية: ${currentUserAccount?.streakDays} Days 🎉", fontSize = 15.sp, color = Color(0xFFFF9600), fontWeight = FontWeight.Black)
+                                                
+                                                Spacer(modifier = Modifier.height(10.dp))
+                                                
+                                                DuolingoButton(
+                                                    onClick = {
+                                                        showProfileDialog = false
+                                                        viewModel.logout()
+                                                    },
+                                                    backgroundColor = Color(0xFFFF4B4B),
+                                                    shadowColor = Color(0xFFEA2B2B),
+                                                    modifier = Modifier.fillMaxWidth().height(42.dp)
                                                 ) {
-                                                    Text(
-                                                        text = "الملف الشخصي / User Profile 🇬🇧",
-                                                        fontSize = 15.sp,
-                                                        fontWeight = FontWeight.Bold,
-                                                        color = GoldenAmber
-                                                    )
-                                                    Divider(color = LightSlate.copy(alpha = 0.2f))
-                                                    
-                                                    if (currentUserAccount != null) {
-                                                        Text("اسم المستخدم: ${currentUserAccount?.username}", fontSize = 12.sp, color = PlatinumClean)
-                                                        Text("البريد الإلكتروني: ${currentUserAccount?.email}", fontSize = 11.sp, color = LightSlate)
-                                                        Text("مجموع النقاط: ${currentUserAccount?.xpPoints} XP", fontSize = 14.sp, color = GoldenAmber, fontWeight = FontWeight.Bold)
-                                                        Text("الأيام المتتالية: ${currentUserAccount?.streakDays} Days", fontSize = 14.sp, color = BritishBlue, fontWeight = FontWeight.Bold)
-                                                        
-                                                        Spacer(modifier = Modifier.height(10.dp))
-                                                        
-                                                        Button(
-                                                            onClick = {
-                                                                showProfileDialog = false
-                                                                viewModel.logout()
-                                                            },
-                                                            colors = ButtonDefaults.buttonColors(containerColor = AccentCrimson),
-                                                            modifier = Modifier.fillMaxWidth().height(38.dp)
-                                                        ) {
-                                                            Text("تسجيل الخروج / Sign Out 👤", fontSize = 11.sp, color = PlatinumClean)
-                                                        }
-                                                    } else {
-                                                        Text("أنت مسجل حالياً كزائر. قم بإنشاء حساب لحفظ نقاطك وتقدّمك ومستوياتك البريطانية إلى الأبد!", fontSize = 11.sp, color = PlatinumClean, textAlign = TextAlign.Center)
-                                                        Spacer(modifier = Modifier.height(10.dp))
-                                                        Button(
-                                                            onClick = {
-                                                                showProfileDialog = false
-                                                                viewModel.showAuthScreen.value = true
-                                                            },
-                                                            colors = ButtonDefaults.buttonColors(containerColor = GoldenAmber),
-                                                            modifier = Modifier.fillMaxWidth().height(38.dp)
-                                                        ) {
-                                                            Text("إنشاء حساب أو تسجيل الدخول", fontSize = 11.sp, color = NavyDeep, fontWeight = FontWeight.Bold)
-                                                        }
-                                                    }
-                                                    
-                                                    TextButton(onClick = { showProfileDialog = false }) {
-                                                        Text("إغلاق / Close", fontSize = 11.sp, color = LightSlate)
-                                                    }
+                                                    Text("تسجيل الخروج / Sign Out 👤", fontSize = 12.sp, color = Color.White, fontWeight = FontWeight.Black)
                                                 }
+                                            } else {
+                                                Text("أنت مسجل حالياً كزائر. قم بإنشاء حساب لحفظ نقاطك وتقدّمك ومستوياتك البريطانية إلى الأبد!", fontSize = 12.sp, color = themeText, textAlign = TextAlign.Center)
+                                                Spacer(modifier = Modifier.height(10.dp))
+                                                DuolingoButton(
+                                                    onClick = {
+                                                        showProfileDialog = false
+                                                        viewModel.showAuthScreen.value = true
+                                                    },
+                                                    backgroundColor = Color(0xFFE52026),
+                                                    shadowColor = Color(0xFFB51218),
+                                                    modifier = Modifier.fillMaxWidth().height(42.dp)
+                                                ) {
+                                                    Text("إنشاء حساب أو تسجيل الدخول", fontSize = 12.sp, color = Color.White, fontWeight = FontWeight.Black)
+                                                }
+                                            }
+                                            
+                                            TextButton(onClick = { showProfileDialog = false }) {
+                                                Text("إغلاق / Close", fontSize = 12.sp, color = Color(0xFF1CB0F6), fontWeight = FontWeight.Bold)
                                             }
                                         }
                                     }
                                 }
-
-                                // Streak badge
-                                Row(
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(12.dp))
-                                        .background(GoldenAmber.copy(alpha = 0.2f))
-                                        .border(1.dp, GoldenAmber, RoundedCornerShape(12.dp))
-                                        .padding(horizontal = 8.dp, vertical = 5.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Star,
-                                        contentDescription = "Streak",
-                                        tint = GoldenAmber,
-                                        modifier = Modifier.size(13.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(3.dp))
-                                    Text(
-                                        text = "${userProgress?.streakDays ?: 0} Days",
-                                        fontSize = 10.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = GoldenAmber
-                                    )
-                                }
-                                // XP Badge
-                                Row(
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(12.dp))
-                                        .background(BritishBlue.copy(alpha = 0.2f))
-                                        .border(1.dp, BritishBlue, RoundedCornerShape(12.dp))
-                                        .padding(horizontal = 8.dp, vertical = 5.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        text = "🇬🇧 ${userProgress?.xpPoints ?: 0} XP",
-                                        fontSize = 10.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = BritishBlue
-                                    )
-                                }
                             }
                         }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(containerColor = CharcoalSlate)
-                )
+                    }
+                }
             },
             bottomBar = {
+                // Highly refined navigation bar styled strictly to mimic Duolingo
                 NavigationBar(
-                    containerColor = CharcoalSlate,
-                    tonalElevation = 8.dp,
-                    modifier = Modifier.windowInsetsPadding(WindowInsets.navigationBars)
+                    containerColor = themeSurface,
+                    modifier = Modifier
+                        .border(width = 1.dp, color = themeBorder)
+                        .windowInsetsPadding(WindowInsets.navigationBars)
                 ) {
+                    // TAB 1: LEARN (Curriculum Lessons)
                     NavigationBarItem(
                         selected = activeTab == "lessons",
                         onClick = { viewModel.activeTab.value = "lessons" },
-                        label = { Text("Curriculum", fontSize = 11.sp, fontWeight = FontWeight.SemiBold) },
-                        icon = { Icon(Icons.Default.Home, contentDescription = "Curriculum") },
+                        label = { Text("التعلم", fontSize = 11.sp, fontWeight = FontWeight.Black) },
+                        icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
                         colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = NavyDeep,
-                            selectedTextColor = GoldenAmber,
-                            indicatorColor = GoldenAmber,
-                            unselectedIconColor = LightSlate,
-                            unselectedTextColor = LightSlate
+                            selectedIconColor = Color(0xFFE52026),
+                            selectedTextColor = Color(0xFFE52026),
+                            indicatorColor = Color(0xFFFFEAEC),
+                            unselectedIconColor = Color(0xFF94A3B8),
+                            unselectedTextColor = Color(0xFF94A3B8)
                         ),
                         modifier = Modifier.testTag("nav_item_lessons")
                     )
+
+                    // TAB 2: CHAT PRACTISE (AI Tutor)
                     NavigationBarItem(
                         selected = activeTab == "chat",
                         onClick = { viewModel.activeTab.value = "chat" },
-                        label = { Text("AI Tutor", fontSize = 11.sp, fontWeight = FontWeight.SemiBold) },
-                        icon = { Icon(Icons.Default.Face, contentDescription = "AI Tutor") },
+                        label = { Text("التدريب", fontSize = 11.sp, fontWeight = FontWeight.Black) },
+                        icon = { Icon(Icons.Default.Face, contentDescription = "Practice") },
                         colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = NavyDeep,
-                            selectedTextColor = GoldenAmber,
-                            indicatorColor = GoldenAmber,
-                            unselectedIconColor = LightSlate,
-                            unselectedTextColor = LightSlate
+                            selectedIconColor = Color(0xFF1CB0F6),
+                            selectedTextColor = Color(0xFF1CB0F6),
+                            indicatorColor = Color(0xFFDDF4FF),
+                            unselectedIconColor = Color(0xFF94A3B8),
+                            unselectedTextColor = Color(0xFF94A3B8)
                         ),
                         modifier = Modifier.testTag("nav_item_chat")
                     )
+
+                    // TAB 3: LEADERBOARD COMS (Competitive League)
+                    NavigationBarItem(
+                        selected = activeTab == "leaderboard",
+                        onClick = { viewModel.activeTab.value = "leaderboard" },
+                        label = { Text("الإنجازات", fontSize = 11.sp, fontWeight = FontWeight.Black) },
+                        icon = { Icon(Icons.Default.Star, contentDescription = "Leaderboard") },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = Color(0xFFFFD900),
+                            selectedTextColor = Color(0xFFFFD900),
+                            indicatorColor = Color(0xFFFFFAD1),
+                            unselectedIconColor = Color(0xFF94A3B8),
+                            unselectedTextColor = Color(0xFF94A3B8)
+                        ),
+                        modifier = Modifier.testTag("nav_item_leaderboard")
+                    )
+
+                    // TAB 4: SHOPPING ITEMS (UK Life simulation coins)
                     NavigationBarItem(
                         selected = activeTab == "money",
                         onClick = { viewModel.activeTab.value = "money" },
-                        label = { Text("UK Life & £", fontSize = 11.sp, fontWeight = FontWeight.SemiBold) },
-                        icon = { Icon(Icons.Default.Star, contentDescription = "UK Life & Money") },
+                        label = { Text("المتجر", fontSize = 11.sp, fontWeight = FontWeight.Black) },
+                        icon = { Icon(Icons.Default.ShoppingCart, contentDescription = "Shop") },
                         colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = NavyDeep,
-                            selectedTextColor = GoldenAmber,
-                            indicatorColor = GoldenAmber,
-                            unselectedIconColor = LightSlate,
-                            unselectedTextColor = LightSlate
+                            selectedIconColor = Color(0xFFFF9600),
+                            selectedTextColor = Color(0xFFFF9600),
+                            indicatorColor = Color(0xFFFFEED1),
+                            unselectedIconColor = Color(0xFF94A3B8),
+                            unselectedTextColor = Color(0xFF94A3B8)
                         ),
                         modifier = Modifier.testTag("nav_item_money")
                     )
+
+                    // TAB 5: PROFILE & Saved glossary dictionary
                     NavigationBarItem(
                         selected = activeTab == "dictionary",
                         onClick = { viewModel.activeTab.value = "dictionary" },
-                        label = { Text("Glossary", fontSize = 11.sp, fontWeight = FontWeight.SemiBold) },
-                        icon = { Icon(Icons.Default.Favorite, contentDescription = "Glossary") },
+                        label = { Text("المزيد", fontSize = 11.sp, fontWeight = FontWeight.Black) },
+                        icon = { Icon(Icons.Default.Menu, contentDescription = "Saved Glossary") },
                         colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = NavyDeep,
-                            selectedTextColor = GoldenAmber,
-                            indicatorColor = GoldenAmber,
-                            unselectedIconColor = LightSlate,
-                            unselectedTextColor = LightSlate
+                            selectedIconColor = Color(0xFFA435F0),
+                            selectedTextColor = Color(0xFFA435F0),
+                            indicatorColor = Color(0xFFF6EFFF),
+                            unselectedIconColor = Color(0xFF94A3B8),
+                            unselectedTextColor = Color(0xFF94A3B8)
                         ),
                         modifier = Modifier.testTag("nav_item_dictionary")
                     )
@@ -308,6 +878,7 @@ fun BritishLearningApp(
                 when (activeTab) {
                     "lessons" -> LessonsScreen(viewModel)
                     "chat" -> ChatScreen(viewModel)
+                    "leaderboard" -> LeaderboardScreen(viewModel)
                     "money" -> MoneyLifeScreen(viewModel)
                     "dictionary" -> DictionaryScreen(viewModel)
                 }
@@ -614,83 +1185,435 @@ fun LessonsScreen(viewModel: BritishLearningViewModel) {
 fun LessonList(viewModel: BritishLearningViewModel) {
     val lessonsList by viewModel.filteredLessons.collectAsStateWithLifecycle()
     val searchQuery by viewModel.dictionarySearchQuery.collectAsStateWithLifecycle()
+    val userProgress by viewModel.userProgress.collectAsStateWithLifecycle()
+    val completedSet = remember(userProgress) {
+        userProgress?.completedLessons?.split(",")?.filter { it.isNotBlank() }?.toSet() ?: emptySet()
+    }
 
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        // Welcome banner
+    val isDark = isSystemInDarkTheme()
+    val themeSurface = if (isDark) Color(0xFF1E293B) else Color.White
+    val themeBorder = if (isDark) Color(0xFF334155) else Color(0xFFE5E5E5)
+    val themeText = if (isDark) Color.White else Color(0xFF3C3C3C)
+    val secondaryText = if (isDark) Color(0xFF94A3B8) else Color(0xFF777777)
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(if (isDark) Color(0xFF131F24) else Color(0xFFF7F7F7))
+    ) {
+        // Search bar (Styled like Duolingo Card search)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(16.dp))
-                .background(Brush.horizontalGradient(listOf(BritishBlue, CharcoalSlate)))
-                .padding(16.dp)
+                .padding(horizontal = 16.dp, vertical = 10.dp)
         ) {
-            Column {
-                Text(
-                    text = "Learn Proper British English! 🇬🇧",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = PlatinumClean
+            TextField(
+                value = searchQuery,
+                onValueChange = { viewModel.dictionarySearchQuery.value = it },
+                placeholder = { Text("البحث في الدروس والمنهج... 🔍", color = secondaryText, fontSize = 13.sp) },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search", tint = Color(0xFFE52026)) },
+                trailingIcon = if (searchQuery.isNotEmpty()) {
+                    {
+                        IconButton(onClick = { viewModel.dictionarySearchQuery.value = "" }) {
+                            Icon(Icons.Default.Close, contentDescription = "Clear search", tint = secondaryText)
+                        }
+                    }
+                } else null,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(16.dp))
+                    .border(2.dp, themeBorder, RoundedCornerShape(16.dp))
+                    .testTag("curriculum_search_tf"),
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = themeSurface,
+                    unfocusedContainerColor = themeSurface,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    focusedTextColor = themeText,
+                    unfocusedTextColor = themeText
                 )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "تعلّم الإنجليزية بمذاقها البريطاني ولهجة الشارع اللندني من الصفر للاحتراف بأسلوب سهل وباللغة العربية.",
-                    fontSize = 12.sp,
-                    color = LightSlate,
-                    lineHeight = 16.sp
-                )
-            }
+            )
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // Search bar
-        TextField(
-            value = searchQuery,
-            onValueChange = { viewModel.dictionarySearchQuery.value = it },
-            placeholder = { Text("البحث في الدروس والقاموس...", color = LightSlate) },
-            leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search", tint = LightSlate) },
-            trailingIcon = if (searchQuery.isNotEmpty()) {
-                {
-                    IconButton(onClick = { viewModel.dictionarySearchQuery.value = "" }) {
-                        Icon(Icons.Default.Close, contentDescription = "Clear search", tint = LightSlate)
+        if (searchQuery.trim().isNotEmpty()) {
+            // Search result view standard list of elegant cards
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                contentPadding = PaddingValues(16.dp),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .testTag("lessons_lazy_column")
+            ) {
+                items(lessonsList) { item ->
+                    LessonCard(item) {
+                        viewModel.selectedLesson.value = item
+                        viewModel.activeQuizIndex.value = 0
+                        viewModel.isQuizAnswered.value = false
+                        viewModel.selectedQuizAnswer.value = null
+                        viewModel.quizScore.value = 0
                     }
                 }
-            } else null,
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(12.dp))
-                .testTag("curriculum_search_tf"),
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = CharcoalSlate,
-                unfocusedContainerColor = CharcoalSlate,
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
-                focusedTextColor = PlatinumClean,
-                unfocusedTextColor = PlatinumClean
-            )
-        )
+            }
+        } else {
+            // Duolingo CURVED LESSON PATH SYSTEM
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .testTag("lessons_lazy_column"),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                contentPadding = PaddingValues(bottom = 32.dp)
+            ) {
+                // UNIT HEADER BANNER
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                            .shadow(3.dp, shape = RoundedCornerShape(20.dp))
+                            .background(
+                                color = Color(0xFFE52026),
+                                shape = RoundedCornerShape(20.dp)
+                            )
+                            .padding(16.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = "القسم 1: لغة الشارع اللندني 🇬🇧",
+                                    fontSize = 17.sp,
+                                    fontWeight = FontWeight.Black,
+                                    color = Color.White
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = "تعلّم أدوات التعريف والصفات بمثالية بريطانية!",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White.copy(alpha = 0.9f)
+                                )
+                            }
+                            Icon(
+                                imageVector = Icons.Default.List,
+                                contentDescription = "Curriculum outline",
+                                tint = Color.White,
+                                modifier = Modifier.size(32.dp)
+                            )
+                        }
+                    }
+                }
 
-        Spacer(modifier = Modifier.height(16.dp))
+                // SIR LEO THE LION GREETING AT THE TOP
+                item {
+                    Spacer(modifier = Modifier.height(10.dp))
+                    BritishOwlMascot(
+                        speechBubbleText = "أهلاً بك يا بطل! 👋 جاهز اليوم لتتعلم الإنجليزية البريطانية بلهجة طبيعية؟ دعنا نبدأ!"
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
 
-        Text(
-            text = "تصنيفات المنهج الدراسي / Curriculum Units",
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Bold,
-            color = PlatinumClean,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
+                // VERTICAL WAVY LESSON PLAN
+                itemsIndexed(lessonsList) { index, item ->
+                    val isUnlocked = index == 0 || completedSet.contains(lessonsList[index - 1].id)
+                    val isCompleted = completedSet.contains(item.id)
 
-        LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-            modifier = Modifier.fillMaxSize().testTag("lessons_lazy_column")
-        ) {
-            items(lessonsList) { item ->
-                LessonCard(item) {
-                    viewModel.selectedLesson.value = item
-                    viewModel.activeQuizIndex.value = 0
-                    viewModel.isQuizAnswered.value = false
-                    viewModel.selectedQuizAnswer.value = null
-                    viewModel.quizScore.value = 0
+                    // 1. Connection curve dotted lines from previous node
+                    if (index > 0) {
+                        val prevIdx = index - 1
+                        val fromOffset = when (prevIdx % 4) {
+                            0 -> 0.dp
+                            1 -> 45.dp
+                            2 -> 0.dp
+                            3 -> (-45).dp
+                            else -> 0.dp
+                        }
+                        val toOffset = when (index % 4) {
+                            0 -> 0.dp
+                            1 -> 45.dp
+                            2 -> 0.dp
+                            3 -> (-45).dp
+                            else -> 0.dp
+                        }
+
+                        // Connection dotted dots
+                        Column(
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            repeat(3) { dotIdx ->
+                                val fraction = (dotIdx + 1) / 4f
+                                val dotOffset = fromOffset + (toOffset - fromOffset) * fraction
+                                val dotColor = if (isUnlocked) Color(0xFFE52026) else Color(0xFFD2D2D2)
+                                Box(
+                                    modifier = Modifier
+                                        .offset(x = dotOffset)
+                                        .size(8.dp)
+                                        .background(dotColor, CircleShape)
+                                )
+                                if (dotIdx < 2) {
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                }
+                            }
+                        }
+                    }
+
+                    // 2. Horizontal oscillating position
+                    val xOffset = when (index % 4) {
+                        0 -> 0.dp
+                        1 -> 45.dp
+                        2 -> 0.dp
+                        3 -> (-45).dp
+                        else -> 0.dp
+                    }
+
+                    // Interactive circular lesson item
+                    var showToastByState by remember { mutableStateOf(false) }
+                    
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .offset(x = xOffset)
+                            .padding(vertical = 8.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        // Lesson Big Circle button
+                        Box(
+                            modifier = Modifier
+                                .size(76.dp)
+                                .clickable {
+                                    if (isUnlocked) {
+                                        viewModel.selectedLesson.value = item
+                                        viewModel.activeQuizIndex.value = 0
+                                        viewModel.isQuizAnswered.value = false
+                                        viewModel.selectedQuizAnswer.value = null
+                                        viewModel.quizScore.value = 0
+                                    } else {
+                                        showToastByState = true
+                                    }
+                                }
+                                .testTag("lesson_card_${item.id}"),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            // Ring outer progress circle if unlocked
+                            if (isUnlocked) {
+                                CircularProgressIndicator(
+                                    progress = { if (isCompleted) 1.0f else 0.4f },
+                                    modifier = Modifier.fillMaxSize(),
+                                    color = if (isCompleted) Color(0xFFFFD900) else Color(0xFFE52026),
+                                    trackColor = if (isDark) Color(0xFF334155) else Color(0xFFE5E5E5),
+                                    strokeWidth = 5.dp
+                                )
+                            } else {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .border(4.dp, Color(0xFFE5E5E5), CircleShape)
+                                )
+                            }
+
+                            // Middle physical 3D button sphere
+                            val surfaceCol = when {
+                                isCompleted -> Color(0xFFFFD900)
+                                isUnlocked -> Color(0xFFE52026)
+                                else -> Color(0xFFE5E5E5)
+                            }
+                            val shadowCol = when {
+                                isCompleted -> Color(0xFFE68500)
+                                isUnlocked -> Color(0xFFB51218)
+                                else -> Color(0xFFD2D2D2)
+                            }
+
+                            Box(
+                                modifier = Modifier
+                                    .size(58.dp)
+                                    .shadow(elevation = 2.dp, shape = CircleShape)
+                                    .background(surfaceCol, CircleShape)
+                                    .border(width = 1.dp, color = shadowCol, shape = CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                if (isUnlocked) {
+                                    val iconImage = when (item.category) {
+                                        "Grammar" -> Icons.Default.PlayArrow
+                                        "Slang" -> Icons.Default.Favorite
+                                        "Texting & Chat" -> Icons.Default.Email
+                                        "Money & Life" -> Icons.Default.ShoppingCart
+                                        else -> Icons.Default.Star
+                                    }
+                                    Icon(
+                                        imageVector = iconImage,
+                                        contentDescription = "Active unit",
+                                        tint = Color.White,
+                                        modifier = Modifier.size(28.dp)
+                                    )
+                                } else {
+                                    Icon(
+                                        imageVector = Icons.Default.Lock,
+                                        contentDescription = "Locked unit",
+                                        tint = Color(0xFF94A3B8),
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        // Lesson Arabic title beneath unit
+                        Text(
+                            text = item.arabicTitle,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Black,
+                            color = if (isUnlocked) themeText else secondaryText,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+
+                    // Alert dialog when card is locked
+                    if (showToastByState) {
+                        Dialog(onDismissRequest = { showToastByState = false }) {
+                            Card(
+                                colors = CardDefaults.cardColors(containerColor = themeSurface),
+                                shape = RoundedCornerShape(16.dp),
+                                modifier = Modifier.padding(16.dp)
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(16.dp).fillMaxWidth(),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Text("هذا الدرس مقفل حالياً! 🔒", fontSize = 16.sp, fontWeight = FontWeight.Black, color = Color(0xFFFF4B4B))
+                                    Text("أكمل الدرس السابق أولاً لتستعدّ لفتح التحدي والتعلم البريطاني التالي وتراكم نقاط الـ XP!", fontSize = 12.sp, color = themeText, textAlign = TextAlign.Center)
+                                    Spacer(modifier = Modifier.height(6.dp))
+                                    DuolingoButton(
+                                        onClick = { showToastByState = false },
+                                        backgroundColor = Color(0xFFE52026),
+                                        shadowColor = Color(0xFFB51218),
+                                        modifier = Modifier.fillMaxWidth().height(36.dp)
+                                    ) {
+                                        Text("فهمت يا معلم! 👍", fontSize = 11.sp, color = Color.White, fontWeight = FontWeight.Bold)
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // 3. BONUS SHOP CHEST INTRODUCED AFTER LESSON 1
+                    if (index == 1) {
+                        var showChestDialog by remember { mutableStateOf(false) }
+                        var chestClaimed by remember { mutableStateOf(false) }
+
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .offset(x = (-20).dp)
+                                .padding(vertical = 12.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            // Dotted connectors before chest
+                            repeat(2) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(8.dp)
+                                        .background(if (isUnlocked) Color(0xFFFF9600) else Color(0xFFD2D2D2), CircleShape)
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                            }
+
+                            // Interactive Chest node
+                            Box(
+                                modifier = Modifier
+                                    .size(68.dp)
+                                    .clickable { showChestDialog = true },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(54.dp)
+                                        .background(
+                                            if (chestClaimed) Color(0xFFD2D2D2) else Color(0xFFFF9600),
+                                            RoundedCornerShape(16.dp)
+                                        )
+                                        .border(
+                                            width = 2.dp,
+                                            color = if (chestClaimed) Color(0xFFCCCCCC) else Color(0xFFFFD900),
+                                            shape = RoundedCornerShape(16.dp)
+                                        ),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = if (chestClaimed) "📭" else "🎁",
+                                        fontSize = 28.sp
+                                    )
+                                }
+                            }
+
+                            Text(
+                                text = if (chestClaimed) "مفتوح / Claimed" else "صندوق المكافأة اليومي! 🎉",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = if (chestClaimed) secondaryText else Color(0xFFFF9600)
+                            )
+                        }
+
+                        // Display Claim treasure dialog
+                        if (showChestDialog) {
+                            Dialog(onDismissRequest = { showChestDialog = false }) {
+                                Card(
+                                    colors = CardDefaults.cardColors(containerColor = themeSurface),
+                                    shape = RoundedCornerShape(20.dp),
+                                    modifier = Modifier
+                                        .border(2.dp, themeBorder, RoundedCornerShape(20.dp))
+                                        .padding(8.dp)
+                                ) {
+                                    Column(
+                                        modifier = Modifier.padding(18.dp),
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                                    ) {
+                                        Text(
+                                            text = "لقد عثرت على هدية شاي بريطانية! ☕🎉",
+                                            fontSize = 17.sp,
+                                            fontWeight = FontWeight.Black,
+                                            color = Color(0xFFFF9600)
+                                        )
+                                        Text(
+                                            text = if (chestClaimed) "سبق لك استلام هذا الصندوق اليوم!" else "تهانينا! صندوق المكافأة يحتوي على 100 نقطة XP إضافية لجهودك البريطانية الرائعة!",
+                                            fontSize = 12.sp,
+                                            color = themeText,
+                                            textAlign = TextAlign.Center
+                                        )
+                                        
+                                        if (!chestClaimed) {
+                                            DuolingoButton(
+                                                onClick = {
+                                                    viewModel.addXp(100)
+                                                    chestClaimed = true
+                                                    showChestDialog = false
+                                                },
+                                                backgroundColor = Color(0xFFFF9600),
+                                                shadowColor = Color(0xFFE68500),
+                                                modifier = Modifier.fillMaxWidth().height(40.dp)
+                                            ) {
+                                                Text("استلام المكافأة 💎 +100 XP", fontSize = 12.sp, color = Color.White, fontWeight = FontWeight.Bold)
+                                            }
+                                        } else {
+                                            DuolingoButton(
+                                                onClick = { showChestDialog = false },
+                                                backgroundColor = Color(0xFFE52026),
+                                                shadowColor = Color(0xFFB51218),
+                                                modifier = Modifier.fillMaxWidth().height(40.dp)
+                                            ) {
+                                                Text("إغلاق صندوق الهدايا", fontSize = 12.sp, color = Color.White, fontWeight = FontWeight.Bold)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -700,20 +1623,27 @@ fun LessonList(viewModel: BritishLearningViewModel) {
 @Composable
 fun LessonCard(item: LessonItem, onClick: () -> Unit) {
     val categoryColor = when (item.category) {
-        "Grammar" -> BritishBlue
-        "Slang" -> GoldenAmber
-        "Texting & Chat" -> Color(0xFF8B5CF6)
-        "Money & Life" -> AccentCrimson
+        "Grammar" -> Color(0xFF2563EB)
+        "Slang" -> Color(0xFFFF9600)
+        "Texting & Chat" -> Color(0xFFA435F0)
+        "Money & Life" -> Color(0xFFFF4B4B)
         else -> Color(0xFF14B8A6)
     }
+
+    val isDark = isSystemInDarkTheme()
+    val themeSurface = if (isDark) Color(0xFF1E293B) else Color.White
+    val themeBorder = if (isDark) Color(0xFF334155) else Color(0xFFE5E5E5)
+    val themeText = if (isDark) Color.White else Color(0xFF3C3C3C)
+    val secondaryText = if (isDark) Color(0xFF94A3B8) else Color(0xFF777777)
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
             .testTag("lesson_card_${item.id}"),
-        colors = CardDefaults.cardColors(containerColor = CharcoalSlate),
-        shape = RoundedCornerShape(14.dp)
+        colors = CardDefaults.cardColors(containerColor = themeSurface),
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(2.dp, themeBorder)
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
@@ -746,12 +1676,12 @@ fun LessonCard(item: LessonItem, onClick: () -> Unit) {
                     text = item.title,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold,
-                    color = PlatinumClean
+                    color = themeText
                 )
                 Text(
                     text = item.arabicTitle,
                     fontSize = 12.sp,
-                    color = LightSlate,
+                    color = secondaryText,
                     fontFamily = FontFamily.SansSerif
                 )
             }
@@ -759,7 +1689,7 @@ fun LessonCard(item: LessonItem, onClick: () -> Unit) {
             Icon(
                 imageVector = Icons.Default.PlayArrow,
                 contentDescription = "Start Lesson",
-                tint = GoldenAmber,
+                tint = Color(0xFFE52026),
                 modifier = Modifier.size(24.dp)
             )
         }
@@ -1276,6 +2206,8 @@ fun LessonContentQuiz(lesson: LessonItem, viewModel: BritishLearningViewModel) {
                             if (selected == currentQuiz.correctAnswerIndex) {
                                 viewModel.quizScore.value = score + 50
                                 viewModel.addXp(50) // gain 50 XP
+                            } else {
+                                viewModel.deductLife()
                             }
                         }
                     },
@@ -1538,7 +2470,7 @@ fun InteractiveChatLayout(viewModel: BritishLearningViewModel) {
     val isApiLoading by viewModel.isChatApiLoading.collectAsStateWithLifecycle()
 
     val sessions = listOf(
-        "tutor_chat" to "🎓 Private Tutor (سير أليستر)",
+        "tutor_chat" to "🎓 Private Tutor (سير ليو)",
         "friends_group" to "💬 UK WhatsApp (شات أصدقاء)",
         "school_group" to "🏫 School Group (قروب المدرسة)",
         "london_pub" to "🍻 Ordering Pub (المقهى اللندني)",
@@ -1623,7 +2555,7 @@ fun InteractiveChatLayout(viewModel: BritishLearningViewModel) {
             if (isApiLoading) {
                 item {
                     Text(
-                        text = "Sir Alistair is thinking... 🇬🇧🍵",
+                        text = "Sir Leo is thinking... 🇬🇧🦁",
                         color = LightSlate,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
@@ -1906,7 +2838,7 @@ fun CorrectorLayout(viewModel: BritishLearningViewModel) {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text("التهجئة الرسمية البريطانية / UK Formal Spelling:", fontSize = 11.sp, color = LightSlate)
                 Box(
-                    modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)).background(Color(0xFF065F46).copy(alpha = 0.2f)).padding(10.dp)
+                    modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)).background(Color(0xFF2563EB).copy(alpha = 0.2f)).padding(10.dp)
                 ) {
                     Text(text = formalOut, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Colors.GreenAccent ?: PlatinumClean)
                 }
@@ -1938,7 +2870,7 @@ fun CorrectorLayout(viewModel: BritishLearningViewModel) {
 
 // Minimal colors bridge
 object Colors {
-    val GreenAccent = Color(0xFF10B981)
+    val GreenAccent = Color(0xFF2563EB)
 }
 
 // ================= 3. UK COINS, PAYMENTS & LIFE GAME =================
@@ -1947,37 +2879,255 @@ object Colors {
 fun MoneyLifeScreen(viewModel: BritishLearningViewModel) {
     val activeSubTab by viewModel.activeMoneySubTab.collectAsStateWithLifecycle()
 
+    val isDark = isSystemInDarkTheme()
+    val themeSurface = if (isDark) Color(0xFF1E293B) else Color.White
+    val themeText = if (isDark) Color.White else Color(0xFF3C3C3C)
+
     Column(modifier = Modifier.fillMaxSize()) {
         TabRow(
-            selectedTabIndex = if (activeSubTab == "coin_game") 0 else 1,
-            containerColor = CharcoalSlate,
-            contentColor = GoldenAmber,
+            selectedTabIndex = when (activeSubTab) {
+                "coin_game" -> 0
+                "supermarket" -> 1
+                else -> 2
+            },
+            containerColor = themeSurface,
+            contentColor = Color(0xFFFF9600),
             indicator = { tabPositions ->
                 TabRowDefaults.SecondaryIndicator(
-                    Modifier.tabIndicatorOffset(tabPositions[if (activeSubTab == "coin_game") 0 else 1]),
-                    color = GoldenAmber
+                    Modifier.tabIndicatorOffset(tabPositions[when (activeSubTab) {
+                        "coin_game" -> 0
+                        "supermarket" -> 1
+                        else -> 2
+                    }]),
+                    color = Color(0xFFFF9600)
                 )
             }
         ) {
             Tab(
                 selected = activeSubTab == "coin_game",
                 onClick = { viewModel.activeMoneySubTab.value = "coin_game" },
-                text = { Text("لعبة النقود / Local Coin Pay", fontSize = 10.sp, fontWeight = FontWeight.Bold) },
+                text = { Text("ألعاب النقود / Coins", fontSize = 10.sp, fontWeight = FontWeight.Bold) },
                 modifier = Modifier.testTag("coin_game_tab")
             )
             Tab(
                 selected = activeSubTab == "supermarket",
                 onClick = { viewModel.activeMoneySubTab.value = "supermarket" },
-                text = { Text("السوبرماركت / Grocery Checkout", fontSize = 10.sp, fontWeight = FontWeight.Bold) },
+                text = { Text("السوبرماركت / Grocery", fontSize = 10.sp, fontWeight = FontWeight.Bold) },
                 modifier = Modifier.testTag("supermarket_checkout_tab")
+            )
+            Tab(
+                selected = activeSubTab == "rewards_shop",
+                onClick = { viewModel.activeMoneySubTab.value = "rewards_shop" },
+                text = { Text("متجر الجواهر / Shop", fontSize = 10.sp, fontWeight = FontWeight.Bold) },
+                modifier = Modifier.testTag("rewards_shop_tab")
             )
         }
 
         Box(modifier = Modifier.fillMaxSize().weight(1f)) {
-            if (activeSubTab == "coin_game") {
-                CoinGameLayout(viewModel)
-            } else {
-                SupermarketCheckoutLayout(viewModel)
+            when (activeSubTab) {
+                "coin_game" -> CoinGameLayout(viewModel)
+                "supermarket" -> SupermarketCheckoutLayout(viewModel)
+                else -> RewardsShopLayout(viewModel)
+            }
+        }
+    }
+}
+
+@Composable
+fun RewardsShopLayout(viewModel: BritishLearningViewModel) {
+    val userProgress by viewModel.userProgress.collectAsStateWithLifecycle()
+    val livesCount by viewModel.livesCount.collectAsStateWithLifecycle()
+
+    val isDark = isSystemInDarkTheme()
+    val themeSurface = if (isDark) Color(0xFF1E293B) else Color.White
+    val themeBorder = if (isDark) Color(0xFF334155) else Color(0xFFE5E5E5)
+    val themeText = if (isDark) Color.White else Color(0xFF3C3C3C)
+    val secondaryText = if (isDark) Color(0xFF94A3B8) else Color(0xFF777777)
+
+    var crownClaimed by remember { mutableStateOf(false) }
+    var doubleXpClaimed by remember { mutableStateOf(false) }
+    var boughtItemMessage by remember { mutableStateOf<String?>(null) }
+
+    val gemsBalance = 200 + (userProgress?.xpPoints ?: 0) * 5
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(if (isDark) Color(0xFF131F24) else Color(0xFFF7F7F7))
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        // Balance Card
+        Card(
+            colors = CardDefaults.cardColors(containerColor = Color(0xFF1CB0F6)),
+            shape = RoundedCornerShape(16.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text("المتجر البريطاني الفاخر 🇬🇧💎", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(top = 8.dp)
+                ) {
+                    Text("💎", fontSize = 24.sp)
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "$gemsBalance",
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.Black,
+                        color = Color.White
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("جواهر / Gems", fontSize = 14.sp, color = Color.White.copy(alpha = 0.9f))
+                }
+            }
+        }
+
+        Text(
+            text = "العروض والمقويات / Specially Brewed UK Offers",
+            fontSize = 14.sp,
+            fontWeight = FontWeight.ExtraBold,
+            color = themeText
+        )
+
+        // Item 1: Refill hearts
+        Card(
+            colors = CardDefaults.cardColors(containerColor = themeSurface),
+            shape = RoundedCornerShape(16.dp),
+            modifier = Modifier.fillMaxWidth().border(2.dp, themeBorder, RoundedCornerShape(16.dp))
+        ) {
+            Row(
+                modifier = Modifier.padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("❤️", fontSize = 32.sp)
+                Spacer(modifier = Modifier.width(16.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("تعبئة فوريّة للقلوب", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = themeText)
+                    Text("اصنع قلوباً ممتلئة لتتجنب الوقوف في الاختبارات.", fontSize = 11.sp, color = secondaryText)
+                }
+                DuolingoButton(
+                    onClick = {
+                        if (livesCount >= 5) {
+                            boughtItemMessage = "قلوبك ممتلئة بالكامل بالفعل! لا حاجة لإهدار الجواهر يا بطل ❤️☕"
+                        } else if (gemsBalance < 50) {
+                            boughtItemMessage = "عذراً! ليس لديك ما يكفي من الجواهر للشراء. أكمل بعض الدروس للحصول عليها! 💎"
+                        } else {
+                            viewModel.refillLives()
+                            boughtItemMessage = "تم ملء قلوبك بالكامل! ❤️ جاهز الآن لمواصلة التحدي بنشاط!"
+                        }
+                    },
+                    backgroundColor = Color(0xFFFF9600),
+                    shadowColor = Color(0xFFE68500),
+                    modifier = Modifier.width(86.dp).height(38.dp)
+                ) {
+                    Text("💎 50", fontSize = 11.sp, color = Color.White, fontWeight = FontWeight.Bold)
+                }
+            }
+        }
+
+        // Item 2: Mascot top royal crown
+        Card(
+            colors = CardDefaults.cardColors(containerColor = themeSurface),
+            shape = RoundedCornerShape(16.dp),
+            modifier = Modifier.fillMaxWidth().border(2.dp, themeBorder, RoundedCornerShape(16.dp))
+        ) {
+            Row(
+                modifier = Modifier.padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("👑", fontSize = 32.sp)
+                Spacer(modifier = Modifier.width(16.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("التاج الملكي الفخم", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = themeText)
+                    Text("اجعل الأسد 'سير ليو' يرتدي تاج الملوك احتفالاً بناس المنهج!", fontSize = 11.sp, color = secondaryText)
+                }
+                DuolingoButton(
+                    onClick = {
+                        if (crownClaimed) {
+                            boughtItemMessage = "سير ليو يرتدي التاج الملكي بالحب بالفعل! 👑🇬🇧"
+                        } else if (gemsBalance < 150) {
+                            boughtItemMessage = "جواهرك لا تشفع للشراء، واصل حل الكويزات لتجمع 150 جوهرة! 💎"
+                        } else {
+                            crownClaimed = true
+                            boughtItemMessage = "تهانينا! الأسد سير ليو أصبح يرتدي التاج الملكي الفخم بكل فخر! 👑🎉"
+                        }
+                    },
+                    backgroundColor = if (crownClaimed) Color(0xFF94A3B8) else Color(0xFFFFD900),
+                    shadowColor = if (crownClaimed) Color(0xFF64748B) else Color(0xFFE68500),
+                    modifier = Modifier.width(86.dp).height(38.dp)
+                ) {
+                    Text(if (crownClaimed) "مملوك" else "💎 150", fontSize = 11.sp, color = Color.White, fontWeight = FontWeight.ExtraBold)
+                }
+            }
+        }
+
+        // Item 3: Tea double streak
+        Card(
+            colors = CardDefaults.cardColors(containerColor = themeSurface),
+            shape = RoundedCornerShape(16.dp),
+            modifier = Modifier.fillMaxWidth().border(2.dp, themeBorder, RoundedCornerShape(16.dp))
+        ) {
+            Row(
+                modifier = Modifier.padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("☕", fontSize = 32.sp)
+                Spacer(modifier = Modifier.width(16.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("شاي مضاعفة الـ XP", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = themeText)
+                    Text("كوب من الشاي البريطاني الساخن يمنحك يوم حماية إضافي ويقوي ذاكرتك!", fontSize = 11.sp, color = secondaryText)
+                }
+                DuolingoButton(
+                    onClick = {
+                        if (doubleXpClaimed) {
+                            boughtItemMessage = "حماية الشاي سارية المفعول حالياً في رصيدك! ☕"
+                        } else if (gemsBalance < 100) {
+                            boughtItemMessage = "يتطلب الشاي 100 جوهرة، تفوق في الأسئلة واقتنص الكنز! 💎"
+                        } else {
+                            doubleXpClaimed = true
+                            viewModel.addXp(20)
+                            boughtItemMessage = "رائع! تناولت كوب الشاي بنجاح وحصلت على هدية فوريّة +20 XP ! 🇬🇧"
+                        }
+                    },
+                    backgroundColor = Color(0xFF1CB0F6),
+                    shadowColor = Color(0xFF1899D6),
+                    modifier = Modifier.width(86.dp).height(38.dp)
+                ) {
+                    Text(if (doubleXpClaimed) "مفعّل" else "💎 100", fontSize = 11.sp, color = Color.White, fontWeight = FontWeight.Bold)
+                }
+            }
+        }
+
+        if (boughtItemMessage != null) {
+            Dialog(onDismissRequest = { boughtItemMessage = null }) {
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = themeSurface),
+                    shape = RoundedCornerShape(20.dp),
+                    modifier = Modifier.border(2.dp, themeBorder, RoundedCornerShape(20.dp)).padding(4.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(18.dp).fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Text("إشعار المتجر / Store Notice 🇬🇧", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color(0xFFFF9600))
+                        Text(text = boughtItemMessage ?: "", fontSize = 12.sp, color = themeText, textAlign = TextAlign.Center)
+                        Spacer(modifier = Modifier.height(10.dp))
+                        DuolingoButton(
+                            onClick = { boughtItemMessage = null },
+                            backgroundColor = Color(0xFFE52026),
+                            shadowColor = Color(0xFFB51218),
+                            modifier = Modifier.fillMaxWidth().height(40.dp)
+                        ) {
+                            Text("رائع! فهمت", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        }
+                    }
+                }
             }
         }
     }
@@ -2160,7 +3310,7 @@ fun CoinGameLayout(viewModel: BritishLearningViewModel) {
                         .weight(1f)
                         .height(38.dp)
                         .clip(RoundedCornerShape(8.dp))
-                        .background(Color(0xFF047857)) // green money notes
+                        .background(Color(0xFF00247D)) // British Blue notes
                         .clickable { viewModel.addPaymentCoin(valDouble) }
                         .testTag("pay_coin_$name"),
                     contentAlignment = Alignment.Center
@@ -2324,8 +3474,8 @@ fun SupermarketCheckoutLayout(viewModel: BritishLearningViewModel) {
                 }
                 if (cardApplied) {
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text("• Clubcard Loyalty Discount (خصم كارت الولاء)", fontSize = 11.sp, color = Color(0xFF10B981))
-                        Text("-£1.80", fontSize = 11.sp, color = Color(0xFF10B981), fontWeight = FontWeight.Bold)
+                        Text("• Clubcard Loyalty Discount (خصم كارت الولاء)", fontSize = 11.sp, color = Color(0xFF2563EB))
+                        Text("-£1.80", fontSize = 11.sp, color = Color(0xFF2563EB), fontWeight = FontWeight.Bold)
                     }
                 }
 
@@ -2343,7 +3493,7 @@ fun SupermarketCheckoutLayout(viewModel: BritishLearningViewModel) {
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(12.dp))
                 .background(CharcoalSlate)
-                .border(2.dp, if (step == 4) Color(0xFF10B981) else GoldenAmber, RoundedCornerShape(12.dp))
+                .border(2.dp, if (step == 4) Color(0xFF2563EB) else GoldenAmber, RoundedCornerShape(12.dp))
                 .padding(16.dp)
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -2410,7 +3560,7 @@ fun SupermarketCheckoutLayout(viewModel: BritishLearningViewModel) {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Button(
                         onClick = { viewModel.applySupermarketClubcard(true) },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF10B981)),
+                        colors = ButtonDefaults.buttonColors(containerColor = BritishBlue),
                         modifier = Modifier.weight(1.5f).height(40.dp).testTag("clubcard_yes_btn")
                     ) {
                         Text("مسح الكارت / Scan Clubcard", fontSize = 10.sp, color = PlatinumClean, fontWeight = FontWeight.Bold)
@@ -2444,7 +3594,7 @@ fun SupermarketCheckoutLayout(viewModel: BritishLearningViewModel) {
                     }
                     Button(
                         onClick = { viewModel.chooseSupermarketPayment("cash") },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF047857)),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00247D)),
                         modifier = Modifier.weight(1f).height(42.dp).testTag("pay_cash_btn")
                     ) {
                         Text("نقدي Cash 💷", fontSize = 10.sp, color = PlatinumClean)
@@ -2467,7 +3617,7 @@ fun SupermarketCheckoutLayout(viewModel: BritishLearningViewModel) {
                                 )
                                 Button(
                                     onClick = { viewModel.submitPinCode(pinCodeInput) },
-                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF10B981)),
+                                    colors = ButtonDefaults.buttonColors(containerColor = BritishBlue),
                                     enabled = pinCodeInput.length == 4,
                                     modifier = Modifier.height(38.dp)
                                 ) {
@@ -2487,7 +3637,7 @@ fun SupermarketCheckoutLayout(viewModel: BritishLearningViewModel) {
                             
                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                                 Text("المتبقي: £${String.format("%.2f", totalToPay)}", fontSize = 11.sp, color = PlatinumClean)
-                                Text("المدفوع كاش: £${String.format("%.2f", paidSum)}", fontSize = 11.sp, color = Color(0xFF10B981))
+                                Text("المدفوع كاش: £${String.format("%.2f", paidSum)}", fontSize = 11.sp, color = BritishBlue)
                             }
 
                             // Coins Row
@@ -2539,16 +3689,16 @@ fun SupermarketCheckoutLayout(viewModel: BritishLearningViewModel) {
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .clip(RoundedCornerShape(8.dp))
-                                        .background(Color(0xFF065F46).copy(alpha = 0.2f))
+                                        .background(Color(0xFF2563EB).copy(alpha = 0.2f))
                                         .padding(8.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                        Text("تم سداد المبلغ المطلوب كاش بالكامل! / Paid Cash Fully", color = Color(0xFF10B981), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                        Text("تم سداد المبلغ المطلوب كاش بالكامل! / Paid Cash Fully", color = Color(0xFF2563EB), fontSize = 11.sp, fontWeight = FontWeight.Bold)
                                         Spacer(modifier = Modifier.height(6.dp))
                                         Button(
                                             onClick = { viewModel.finishSupermarketScenario() },
-                                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF10B981)),
+                                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2563EB)),
                                             modifier = Modifier.height(36.dp)
                                         ) {
                                             Text("طباعة الفاتورة واستلام الباقي / Get Receipt", fontSize = 11.sp)
@@ -2596,14 +3746,14 @@ fun SupermarketCheckoutLayout(viewModel: BritishLearningViewModel) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(12.dp))
-                        .background(Color(0xFF065F46).copy(alpha = 0.2f))
-                        .border(1.dp, Color(0xFF10B981), RoundedCornerShape(12.dp))
+                        .background(Color(0xFF2563EB).copy(alpha = 0.2f))
+                        .border(1.dp, Color(0xFF2563EB), RoundedCornerShape(12.dp))
                         .padding(14.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color(0xFF10B981), modifier = Modifier.size(40.dp))
-                        Text("Lovely Job, Mate! Challenge Completed!", color = Color(0xFF10B981), fontSize = 13.sp, fontWeight = FontWeight.ExtraBold)
+                        Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color(0xFF2563EB), modifier = Modifier.size(40.dp))
+                        Text("Lovely Job, Mate! Challenge Completed!", color = Color(0xFF2563EB), fontSize = 13.sp, fontWeight = FontWeight.ExtraBold)
                         Text("نلت مكافأة ممتازة +100 XP لمهارات الكاشير والتسوق البريطاني!", color = PlatinumClean, fontSize = 10.sp)
                         
                         Spacer(modifier = Modifier.height(8.dp))

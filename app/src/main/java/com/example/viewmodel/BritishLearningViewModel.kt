@@ -28,6 +28,19 @@ class BritishLearningViewModel(application: Application) : AndroidViewModel(appl
     // --- NAVIGATION STATE ---
     var activeTab = MutableStateFlow("lessons") // lessons, chat, money, dictionary
 
+    // --- HEARTS / LIVES GAME SYSTEM ---
+    var livesCount = MutableStateFlow(5)
+
+    fun deductLife() {
+        if (livesCount.value > 0) {
+            livesCount.value = livesCount.value - 1
+        }
+    }
+
+    fun refillLives() {
+        livesCount.value = 5
+    }
+
     // --- CURRICULUM STATE ---
     var selectedLesson = MutableStateFlow<LessonItem?>(null)
     var activeQuizIndex = MutableStateFlow(0)
@@ -465,7 +478,7 @@ class BritishLearningViewModel(application: Application) : AndroidViewModel(appl
 
     private suspend fun insertWelcomeMessageForSession(sessionId: String) {
         val welcomeText = when (sessionId) {
-            "tutor_chat" -> "Right then, welcome absolute champion! I'm Sir Alistair, your high-class native British Tutor. Let's make you sound like a proper British bloke or lass. Ask me any grammar questions, write a sentence, or say hi!\n\nأهلاً بك يا بطل! أنا سير أليستر، معلمك البريطاني الخاص. اسألني أي سؤال في القواعد، وسأعطيك إجابة ممتعة ممزوجة بالعربية الفصحى العامية الميسرة!"
+            "tutor_chat" -> "Right then, welcome absolute champion! I'm Sir Leo, your high-class native British Tutor. Let's make you sound like a proper British bloke or lass. Ask me any grammar questions, write a sentence, or say hi!\n\nأهلاً بك يا بطل! أنا سير ليو، معلمك البريطاني الخاص. اسألني أي سؤال في القواعد، وسأعطيك إجابة ممتعة ممزوجة بالعربية الفصحى العامية الميسرة!"
             "friends_group" -> "Group chat [UK Uni Squad 🇬🇧]\n\nbruv 1: u free tonight? pub rn?\n\nbruv 2: ngl i'm skint tbf... fiver left inside my pocket 😭"
             "school_group" -> "Group chat [London Sixth Form 🎒]\n\nDan: ngl this rev is killing me tbf, who has done the physics hw?? 💀\n\nChloe: ikr!! it's absolute peak. i've got some notes, but idk if they are right. Lewis you revising rn?\n\nLewis: skiving revision tbh, down at the skatepark innit mate 😂"
             "london_pub" -> "Bartender: Alright mate? What can I get for you today? Cash or contactless?\n\nالبارمان: هلاً يا صديقي، ماذا يمكنني أن أقدم لك؟ كاش أم بطاقة؟"
@@ -533,7 +546,7 @@ class BritishLearningViewModel(application: Application) : AndroidViewModel(appl
     private fun buildChatPromptForSession(session: String, userMsg: String): String {
         val baseRule = "You represent a master British English teaching engine. You MUST respond clearly in a mix of authentic British English and Arabic. Follow all rules of British language (use 'colour', 'favourite', 'biscuit', etc.) and explain slang and manners. Respond in under 120 words. User wrote: '$userMsg'."
         return when (session) {
-            "tutor_chat" -> "Role: Sir Alistair, a polite but funny native British tutor. Correct any of user's English mistakes. Tell them how British people say it. Be friendly. $baseRule"
+            "tutor_chat" -> "Role: Sir Leo, a polite but funny native British tutor. Correct any of user's English mistakes. Tell them how British people say it. Be friendly. $baseRule"
             "friends_group" -> "Role: A friend in a UK WhatsApp/Snapchat group Uni chat using texting shortcuts (bruv, mate, rn, idk, ngl, tbf). Respond like a young native British teenager and explain any slang in parenthesis in Arabic. $baseRule"
             "school_group" -> "Role: Dan, Chloe, or Lewis (representing school pupils/students on a London Sixth Form high school group chat). Discuss GCSE/A-Levels, revision, homework, and skiving. Challenge the user to use abbreviations like 'rev' (revision), 'hw' (homework), 'rn' (right now), 'ngl' (not gonna lie), 'tbf' (to be fair), 'tbh' (to be honest), 'ikr' (I know, right?). Respond like a natural informal British teenager texting from London, and explain any slang or abbreviation in standard parenthetical Arabic. $baseRule"
             "london_pub" -> "Role: London Pub Bartender or regular at the pub. Ask user what drink/food they want using prices and terms like 'quid' or contactless payment and manners. Explain in Arabic. $baseRule"
@@ -684,7 +697,7 @@ class BritishLearningViewModel(application: Application) : AndroidViewModel(appl
         val responseText = when (session) {
             "tutor_chat" -> {
                 val corrected = userMsg.replace("color", "colour").replace("favorite", "favourite")
-                "Alistair: Lovely effort, mate! But watch your language: we spell it with an extra 'u' here in Albion! Let's use '$corrected' naturally in a chat next time. Innit!\n\n(جهد عظيم يا بطل! لكن انتبه للتهجئة البريطانية: نضع حرف U الإضافي دائماً، لتصبح الكلمة تهجئة بريطانية قياسية!)"
+                "Leo: Lovely effort, mate! But watch your language: we spell it with an extra 'u' here in Albion! Let's use '$corrected' naturally in a chat next time. Innit!\n\n(جهد عظيم يا بطل! لكن انتبه للتهجئة البريطانية: نضع حرف U الإضافي دائماً، لتصبح الكلمة تهجئة بريطانية قياسية!)"
             }
             "friends_group" -> "bruv: ngl that sounds mental tbf 💀 but yeah count me in, gonna grab some cheeky biscuits on the way rn mate!"
             "school_group" -> "Chloe: ikr!! Dan always skives physics to be fair, but we rly need to schedule revision for our GCSE exam rn if we wanna pass. tbh I'm proper terrified!\n\n(أنا أعلم، صحيح!! دان يتهرب دائماً من حصة الفيزياء لكي نكون منصفين، ولكننا بحاجة حقاً لجدولة المراجعة لامتحان شهادة الـ GCSE الخاصة بنا الآن إذا أردنا النجاح. سأكون صادقة، أنا خائفة تماماً!)"
